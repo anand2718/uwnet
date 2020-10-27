@@ -100,15 +100,44 @@ matrix im2col(image im, int size, int stride)
 // image im: image to add elements back into
 image col2im(int width, int height, int channels, matrix col, int size, int stride)
 {
-    int i, j, k;
+    int c, x, y, kx, ky;
 
     image im = make_image(width, height, channels);
+    int outh = (im.h-1)/stride + 1;
     int outw = (im.w-1)/stride + 1;
     int rows = im.c*size*size;
-
+    int cols = outw * outh;
+    
+    int koffset = (size - 1) / 2;
     // TODO: 5.2
     // Add values into image im from the column matrix
-    
+    for(c = 0; c < im.c; c++) {
+        // for each top-left corner of the convolution grid
+        // i.e. every single element 
+        for(y = 0; y < im.h; y += stride) {
+            for(x = 0; x < im.w; x += stride) {
+            // x, y on image = i, j is the center of the kernel
+            // for each row in the convolution grid 
+                // so from size / 2;
+                // for each column in the convolution grid 
+                for(ky = 0; ky < size; ky++) {
+                    int imgy = y + ky - koffset;
+                    if (imgy < 0 || imgy >= im.h) {
+                        continue;
+                    }
+                    for(kx = 0; kx < size; kx++) {
+                        int imgx = x + kx - koffset;
+                        if (imgx < 0 || imgx >= im.w) {
+                            continue;
+                        }
+                        int outx = (y / stride) * (im.w / stride) + (x / stride);
+                        int outy = (c * size * size) + ky * size + kx;
+                        set_pixel(im, imgx, imgy, c, get_pixel(im, imgx, imgy, c) + col.data[outy * cols + outx]);
+                    }
+                }
+            }
+        }
+    }
 
 
     return im;
