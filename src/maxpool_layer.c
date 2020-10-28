@@ -2,6 +2,7 @@
 #include <math.h>
 #include <assert.h>
 #include <float.h>
+#include <limits.h>
 #include "uwnet.h"
 
 
@@ -20,9 +21,57 @@ matrix forward_maxpool_layer(layer l, matrix in)
     int outh = (l.height-1)/l.stride + 1;
     matrix out = make_matrix(in.rows, outw*outh*l.channels);
 
+    int i, c, x, y, kx, ky;
+    int koffset = (l.size - 1) / 2;
+    
     // TODO: 6.1 - iterate over the input and fill in the output with max values
+    for (i = 0; i < in.rows; i++) {
+        for(c = 0; c < l.channels; c++) {
+        // for each top-left corner of the convolution grid
+        // i.e. every single element 
+            for(y = 0; y < l.height; y += l.stride) {
+                for(x = 0; x < l.width; x += l.stride) {
+                // x, y on image = i, j is the center of the kernel
+                // for each row in the convolution grid 
+                    // so from size / 2;
+                    // for each column in the convolution grid 
+                    float max = FLT_MIN; 
+                    for(ky = 0; ky < l.size; ky++) {
+                        int imgy = y + ky - koffset;
+                        if (imgy < 0 || imgy >= l.height) {
+                            continue;
+                        }
+                        for(kx = 0; kx < l.size; kx++) {
+                            int imgx = x + kx - koffset;
+                            if (imgx < 0 || imgx >= l.width) {
+                                continue;
+                            }
+                            // for every x we need to offset by 1
+                            // for every y we need to offset by a full row l.width
+                            // for every c we need to offset by a full single-channel image l.width * l.height
+                            // for every multi-channel image (a row) we need to offset by l.width * l.height * l.channels
+                            // so imgx + l.width * imgy + l.width * l.height * c + l.width * l.height * l.channels * i
+                            // Which we factor to get this
+                            float val = in.data[imgx + l.width * (imgy + l.height * (c + l.channels * i))];
+                            
+                            if (val > max) {
+                                max = val;
+                            }
+                        }
+                    }
+                    // Update max here
+                    int outx = (x / l.stride);
+                    int outy = (y / l.stride);
 
-
+                    int outindex = outx + outw * (outy + outh * (c + l.channels * i));
+                    if (outindex >= in.rows * outw * outh * l.channels) {
+                        printf("This will break");
+                    }
+                    out.data[outx + outw * (outy + outh * (c + l.channels * i))] = max;
+                }
+            }
+        }
+    }
 
     return out;
 }
