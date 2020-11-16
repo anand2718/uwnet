@@ -30,6 +30,17 @@ matrix variance(matrix x, matrix m, int groups)
 {
     matrix v = make_matrix(1, groups);
     // TODO: 7.1 - Calculate variance
+    int n = x.cols / groups;
+    int i, j;
+    for(i = 0; i < x.rows; ++i){
+        for(j = 0; j < x.cols; ++j){
+            int d = (x.data[i*x.cols + j] - m.data[j/n]);
+            v.data[j/n] += d * d;
+        }
+    }
+    for(i = 0; i < m.cols; ++i){
+        v.data[i] = v.data[i] / x.rows / n;
+    }
     return v;
 }
 

@@ -26,6 +26,8 @@ endif
 ifeq ($(DEBUG), 1) 
 OPTS=-O0 -g
 COMMON= -Iinclude/ -Isrc/ 
+else
+CFLAGS+= -march=native
 endif
 
 CFLAGS+=$(OPTS)
