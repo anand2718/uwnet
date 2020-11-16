@@ -1,3 +1,4 @@
+#define EPSILON 0.00001f
 #include <stdlib.h>
 #include <math.h>
 #include <assert.h>
@@ -48,14 +49,13 @@ matrix variance(matrix x, matrix m, int groups)
 // returns: y = (x-m)/sqrt(v + epsilon)
 matrix normalize(matrix x, matrix m, matrix v, int groups)
 {
-    float eps = 0.00001f;
     matrix norm = make_matrix(x.rows, x.cols);
     // TODO: 7.2 - Normalize x
     int n = x.cols / groups;
     int i, j;
     for(i = 0; i < x.rows; ++i){
         for(j = 0; j < x.cols; ++j){
-            norm.data[i * x.cols + j] = (x.data[i*x.cols + j] - m.data[j/n]) / sqrt(v.data[j / n] + eps);
+            norm.data[i * x.cols + j] = (x.data[i*x.cols + j] - m.data[j/n]) / sqrt(v.data[j / n] + EPSILON);
         }
     }
     return norm;
@@ -98,6 +98,13 @@ matrix delta_mean(matrix d, matrix v)
     int groups = v.cols;
     matrix dm = make_matrix(1, groups);
     // TODO 7.3 - Calculate dL/dm
+    int n = d.cols / groups;
+    int i, j;
+    for(i = 0; i < d.rows; ++i){
+        for(j = 0; j < d.cols; ++j){
+            dm.data[j/n] -= d.data[i*d.cols + j] / sqrt(v.data[j / n] + EPSILON);
+        }
+    }
     return dm;
 }
 
@@ -107,6 +114,13 @@ matrix delta_variance(matrix d, matrix x, matrix m, matrix v)
     int groups = m.cols;
     matrix dv = make_matrix(1, groups);
     // TODO 7.4 - Calculate dL/dv
+    int n = d.cols / groups;
+    int i, j;
+    for(i = 0; i < d.rows; ++i){
+        for(j = 0; j < d.cols; ++j){
+            dv.data[j/n] -= d.data[i*d.cols + j] * (x.data[i*x.cols + j] - m.data[j/n]) * pow(v.data[j / n] + EPSILON, -3.0/2.0) * 0.5;
+        }
+    }
     return dv;
 }
 
@@ -114,6 +128,18 @@ matrix delta_batch_norm(matrix d, matrix dm, matrix dv, matrix m, matrix v, matr
 {
     matrix dx = make_matrix(d.rows, d.cols);
     // TODO 7.5 - Calculate dL/dx
+    int groups = m.cols;
+    int n = dx.cols / groups;
+    double num_items = d.rows * n;
+    int i, j;
+    for(i = 0; i < dx.rows; ++i){
+        for(j = 0; j < dx.cols; ++j){
+            double t0 = d.data[i * d.cols + j] / sqrt(v.data[j / n] + EPSILON);
+            double t1 = dv.data[j / n] * 2.0 * (x.data[i * x.cols + j] - m.data[j / n]) / num_items;
+            double t2 = dm.data[j / n] / num_items;
+            dx.data[i * dx.cols + j] = t0 + t1 + t2;
+        }
+    }
     return dx;
 }
 
