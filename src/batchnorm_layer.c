@@ -34,7 +34,7 @@ matrix variance(matrix x, matrix m, int groups)
     int i, j;
     for(i = 0; i < x.rows; ++i){
         for(j = 0; j < x.cols; ++j){
-            int d = (x.data[i*x.cols + j] - m.data[j/n]);
+            float d = (x.data[i*x.cols + j] - m.data[j/n]);
             v.data[j/n] += d * d;
         }
     }
