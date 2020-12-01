@@ -25,7 +25,7 @@ print
 print("making model...")
 batch = 128
 iters = 500
-rate = .03
+rate = .02
 momentum = .9
 decay = .005
 
@@ -40,19 +40,6 @@ print("training accuracy: %f", accuracy_net(m, train))
 print("test accuracy:     %f", accuracy_net(m, test))
 
 # 7.6 Question: What do you notice about training the convnet with/without batch normalization? How does it affect convergence? How does it affect what magnitude of learning rate you can use? Write down any observations from your experiments:
-# TODO: Your answer
-# ('training accuracy: %f', 0.40786001086235046)
-# ('test accuracy:     %f', 0.40529999136924744)
-
-# ('training accuracy: %f', 0.541700005531311)
-# ('test accuracy:     %f', 0.5339000225067139)
-
-# kinda converged around 500 but not really
-# converged around 100
-# LR 0.05
-# training accuracy: %f', 0.5511000156402588)
-# ('test accuracy:     %f', 0.5430999994277954)
-
-# LR 0.02
-# ('training accuracy: %f', 0.5627599954605103)
-# ('test accuracy:     %f', 0.5501000285148621)
+# Adding batch normalization improved the training and test accuracy of the model.
+# It also appeared to converge much faster. Increasing the learning rate slightly
+# to 0.02 did improve accuracy but beyond that it decreased.
